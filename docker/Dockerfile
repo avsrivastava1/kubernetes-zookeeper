@@ -1,22 +1,20 @@
-FROM ubuntu:16.04 
+FROM ubuntu:18.04
 ENV ZK_USER=zookeeper \
 ZK_DATA_DIR=/var/lib/zookeeper/data \
 ZK_DATA_LOG_DIR=/var/lib/zookeeper/log \
 ZK_LOG_DIR=/var/log/zookeeper \
 JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 
-ARG GPG_KEY=C823E3E5B12AF29C67F81976F5CECB3CB5E9BD2D
 ARG ZK_DIST=zookeeper-3.4.10
 RUN set -x \
     && apt-get update \
+    && apt-get -y dist-upgrade \
     && apt-get install -y openjdk-8-jre-headless wget netcat-openbsd \
-	&& wget -q "http://www.apache.org/dist/zookeeper/$ZK_DIST/$ZK_DIST.tar.gz" \
-    && wget -q "http://www.apache.org/dist/zookeeper/$ZK_DIST/$ZK_DIST.tar.gz.asc" \
-    && export GNUPGHOME="$(mktemp -d)" \
-    && gpg --keyserver ha.pool.sks-keyservers.net --recv-key "$GPG_KEY" \
-    && gpg --batch --verify "$ZK_DIST.tar.gz.asc" "$ZK_DIST.tar.gz" \
+    && wget -q "http://archive.apache.org/dist/zookeeper/$ZK_DIST/$ZK_DIST.tar.gz" \
+    && wget -q "http://archive.apache.org/dist/zookeeper/$ZK_DIST/$ZK_DIST.tar.gz.md5" \
+    && md5sum -c "$ZK_DIST.tar.gz.md5" \
     && tar -xzf "$ZK_DIST.tar.gz" -C /opt \
-    && rm -r "$GNUPGHOME" "$ZK_DIST.tar.gz" "$ZK_DIST.tar.gz.asc" \
+    && rm -r "$ZK_DIST.tar.gz" "$ZK_DIST.tar.gz.md5" \
     && ln -s /opt/$ZK_DIST /opt/zookeeper \
     && rm -rf /opt/zookeeper/CHANGES.txt \
     /opt/zookeeper/README.txt \
@@ -52,4 +50,4 @@ RUN set -x \
 	&& ln -s /opt/zookeeper/conf/ /usr/etc/zookeeper \
 	&& ln -s /opt/zookeeper/bin/* /usr/bin \
 	&& ln -s /opt/zookeeper/$ZK_DIST.jar /usr/share/zookeeper/ \
-	&& ln -s /opt/zookeeper/lib/* /usr/share/zookeeper 
+	&& ln -s /opt/zookeeper/lib/* /usr/share/zookeeper
